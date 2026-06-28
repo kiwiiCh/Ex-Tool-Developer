@@ -1535,18 +1535,19 @@ if isExec then
 
         local hookBody = function(self, ...)
             local method = getnamecallmethod()
+            local args = {...}  -- capture varargs before nested function
             if rspyActive then
                 pcall(function()
                     if self:IsA("RemoteEvent") or self:IsA("RemoteFunction") then
                         if method == "FireServer" then
-                            addRSpyEntry(self.Name, self:GetFullName(), "C->S FireServer", ...)
+                            addRSpyEntry(self.Name, self:GetFullName(), "C->S FireServer", table.unpack(args))
                         elseif method == "InvokeServer" then
-                            addRSpyEntry(self.Name, self:GetFullName(), "C->S InvokeServer", ...)
+                            addRSpyEntry(self.Name, self:GetFullName(), "C->S InvokeServer", table.unpack(args))
                         end
                     end
                 end)
             end
-            return origNC(self, ...)
+            return origNC(self, table.unpack(args))
         end
 
         mt.__namecall = type(newcclosure) == "function" and newcclosure(hookBody) or hookBody
